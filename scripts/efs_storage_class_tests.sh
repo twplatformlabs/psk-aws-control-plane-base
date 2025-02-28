@@ -3,7 +3,7 @@ set -eo pipefail
 
 cluster_name=$1
 export AWS_REGION=$(jq -er .aws_region "$cluster_name".auto.tfvars.json)
-efs_eks_cis_storage_id=$(op read op://platform/psk-aws-$cluster_name/eks-efs-csi-storage-id)
+efs_eks_cis_storage_id=$(op read op://platform/$cluster_name/eks-efs-csi-storage-id)
 
 # create efs dynamic persistent volume claim
 cat <<EOF > test/efs/dynamic-volume/pvc.yaml
