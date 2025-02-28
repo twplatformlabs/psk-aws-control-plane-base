@@ -7,8 +7,8 @@ orbs:
   do: twdps/pipeline-events@5.0.1
 
 globals:
-  - &context empc-lab
-  - &executor-image twdps/circleci-infra-aws:alpine-7.9.0
+  - &context platform
+  - &executor-image twdps/circleci-infra-aws:alpine-7.9.1
 
 on-push-main: &on-push-main
   branches:
@@ -113,7 +113,7 @@ jobs:
       - set-environment:
           cluster: << parameters.cluster >>
       - kube/op-config:
-          op-value: empc-lab/psk-aws-<< parameters.cluster>>/kubeconfig-base64
+          op-value: platform/<< parameters.cluster>>/kubeconfig-base64
       - run-integration-tests:
           cluster: << parameters.cluster >>
 
@@ -141,7 +141,7 @@ workflows:
           executor-image: *executor-image
           workspace: sbx-i01-aws-us-east-1
           tfc-workspace: psk-aws-control-plane-base-sbx-i01-aws-us-east-1
-          tfc-organization: twdps
+          tfc-organization: twplatformlabs
           before-plan:
             - set-environment:
                 cluster: sbx-i01-aws-us-east-1
@@ -180,7 +180,7 @@ workflows:
           executor-image: *executor-image
           workspace: prod-i01-aws-us-east-2
           tfc-workspace: psk-aws-control-plane-base-prod-i01-aws-us-east-2
-          tfc-organization: twdps
+          tfc-organization: twplatformlabs
           before-plan:
             - set-environment:
                 cluster: prod-i01-aws-us-east-2

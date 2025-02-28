@@ -1,7 +1,7 @@
 # EKS Best Practices Guides
 ## Implementation Notes
 
-For implmementation guidelines that apply to deployments in general refer to the [Application Deployment Engineering Practices](https://github.com/ThoughtWorks-DPS/psk-documentation/blob/master/doc/application_deployment_engineering_practices.md).
+For implmementation guidelines that apply to deployments in general refer to the [Application Deployment Engineering Practices](https://github.com/twplatformlabs/psk-documentation/blob/master/doc/application_deployment_engineering_practices.md).
 
 #### Security: IAM  
 
@@ -43,10 +43,10 @@ resource "aws_launch_template" "foo" {
 [x] Scope the IAM Role trust policy for IRSA Roles to the service account name, namespace, and cluster; [Source](eks-addons.tf)
 [x] Use one IAM role per application; [Source](eks-addons.tf)
 [x] When your application needs access to IMDS, use IMDSv2 and increase the hop limit on EC2 instances to 2; **N/A**
-[x] Disable auto-mounting of service account tokens; [Guidelines](https://github.com/ThoughtWorks-DPS/psk-documentation/blob/master/doc/application_deployment_engineering_practices.md)
-[x] Use dedicated service accounts for each application; [Guidelines](https://github.com/ThoughtWorks-DPS/psk-documentation/blob/master/doc/application_deployment_engineering_practices.md)
-[x] Run the application as a non-root user; [Source](eks-addons.tf), [Guidelines](https://github.com/ThoughtWorks-DPS/psk-documentation/blob/master/doc/application_deployment_engineering_practices.md)
-[x] Grant least privileged access to applications; [Guidelines](https://github.com/ThoughtWorks-DPS/psk-documentation/blob/master/doc/application_deployment_engineering_practices.md)
+[x] Disable auto-mounting of service account tokens; [Guidelines](https://github.com/twplatformlabs/psk-documentation/blob/master/doc/application_deployment_engineering_practices.md)
+[x] Use dedicated service accounts for each application; [Guidelines](https://github.com/twplatformlabs/psk-documentation/blob/master/doc/application_deployment_engineering_practices.md)
+[x] Run the application as a non-root user; [Source](eks-addons.tf), [Guidelines](https://github.com/twplatformlabs/psk-documentation/blob/master/doc/application_deployment_engineering_practices.md)
+[x] Grant least privileged access to applications; [Guidelines](https://github.com/twplatformlabs/psk-documentation/blob/master/doc/application_deployment_engineering_practices.md)
 [x] Review and revoke unnecessary anonymous access to your EKS cluster
 [x] Reuse AWS SDK sessions with IRSA; **N/A**
 

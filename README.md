@@ -1,9 +1,9 @@
 <div align="center">
 	<p>
-	<img alt="Thoughtworks Logo" src="https://raw.githubusercontent.com/ThoughtWorks-DPS/static/master/thoughtworks_flamingo_wave.png?sanitize=true" width=200 /><br />
-	<img alt="DPS Title" src="https://raw.githubusercontent.com/ThoughtWorks-DPS/static/master/EMPCPlatformStarterKitsImage.png?sanitize=true" width=350/><br />
+	<img alt="Thoughtworks Logo" src="https://raw.githubusercontent.com/twplatformlabs/static/master/thoughtworks_flamingo_wave.png?sanitize=true" width=200 /><br />
+	<img alt="DPS Title" src="https://raw.githubusercontent.com/twplatformlabs/static/master/EMPCPlatformStarterKitsImage.png?sanitize=true" width=350/><br />
 	<h2>psk-aws-control-plane-base</h2>
-	<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/github/license/ThoughtWorks-DPS/psk-aws-control-plane-base"></a> <a href="https://aws.amazon.com"><img src="https://img.shields.io/badge/-deployed-blank.svg?style=social&logo=amazon"></a>
+	<a href="https://opensource.org/licenses/MIT"><img src="https://img.shields.io/github/license/twplatformlabs/psk-aws-control-plane-base"></a> <a href="https://aws.amazon.com"><img src="https://img.shields.io/badge/-deployed-blank.svg?style=social&logo=amazon"></a>
 	</p>
 </div>
 
@@ -13,7 +13,7 @@ A typical Engineering Platform release pipeline for the underlying cluster contr
 
 <div align="center">
 	<p>
-		<img alt="Thoughtworks Logo" src="https://raw.githubusercontent.com/ThoughtWorks-DPS/psk-aws-control-plane-base/main/release-pipeline.png?sanitize=true" width=800 />
+		<img alt="Thoughtworks Logo" src="https://raw.githubusercontent.com/twplatformlabs/psk-aws-control-plane-base/main/release-pipeline.png?sanitize=true" width=800 />
 	</p>
 </div>
 <br />
@@ -42,7 +42,7 @@ At scale, each role may include multiple clusters. Note that the platform custom
 		* arm and amd NodePools resources defined
 		* target desired architecture with `kubernetes.io/arch` = "arm64" | "amd64"
 * psk-system namespace created
-* admin ClusterRolebinding created for ThoughtWorks-DPS/twdps-core-labs-team claim
+* admin ClusterRolebinding created for twplatformlabs/twdps-core-labs-team claim
 
 ## EKS Best Practices Guides
 

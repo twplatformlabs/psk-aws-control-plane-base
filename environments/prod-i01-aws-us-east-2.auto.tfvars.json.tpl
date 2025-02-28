@@ -1,6 +1,6 @@
 {
   "cluster_name": "prod-i01-aws-us-east-2",
-  "aws_account_id": "{{ op://empc-lab/aws-dps-1/aws-account-id }}",
+  "aws_account_id": "{{ op://platform/aws-production/aws-account-id }}",
   "aws_assume_role": "PSKRoles/PSKControlPlaneBaseRole",
   "aws_region": "us-east-2",
 
@@ -22,8 +22,8 @@
 
   "karpenter_chart_version": "1.2.1",
 
-  "oidc_client_id": "{{ op://empc-lab/svc-auth0/pskctl-cli-client-id }}",
-  "oidc_groups_claim": "https://github.org/ThoughtWorks-DPS/teams",
+  "oidc_client_id": "{{ op://platform/svc-auth0/pskctl-cli-client-id }}",
+  "oidc_groups_claim": "https://github.org/twplatformlabs/teams",
   "oidc_identity_provider_config_name": "Auth0",
   "oidc_issuer_url": "https://pskctl.us.auth0.com/"
 }
