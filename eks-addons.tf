@@ -1,6 +1,6 @@
 module "eks_addons" {
   source     = "aws-ia/eks-blueprints-addons/aws"
-  version    = "1.19.0"
+  version    = "1.20.0"
   depends_on = [module.eks]
 
   cluster_name      = module.eks.cluster_name
