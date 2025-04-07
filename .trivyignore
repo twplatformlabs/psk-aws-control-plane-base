@@ -14,3 +14,12 @@ AVD-KSV-0014
 AVD-KSV-0012
 AVD-KSV-0020
 AVD-KSV-0021
+# external registry is allowed
+AVD-KSV-0032
+AVD-KSV-0033
+AVD-KSV-0034
+AVD-KSV-0035
+
+# Not applying limit/request policy levels
+AVD-KSV-0039
+AVD-KSV-0040
