@@ -4,7 +4,7 @@ orbs:
   terraform: twdps/terraform@3.1.1
   kube: twdps/kube-ops@1.1.2
   op: twdps/onepassword@3.0.0
-  do: twdps/pipeline-events@5.0.1
+  do: twdps/pipeline-events@5.1.0
 
 globals:
   - &context platform
