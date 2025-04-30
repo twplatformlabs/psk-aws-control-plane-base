@@ -25,7 +25,7 @@ spec:
           values: ["m","c","r"]
         - key: "karpenter.k8s.aws/instance-family"
           operator: In
-          values: ["t4g","m6g","m7g","c6g","c6gn","c7g","c7gn","r6g","r7g"]
+          values: ["t4g","m6g","m7g","m8g"]
         - key: "karpenter.k8s.aws/instance-size"
           operator: In
           values: ["xlarge","2xlarge","4xlarge"]
@@ -35,11 +35,6 @@ spec:
   disruption:
     consolidationPolicy: WhenEmptyOrUnderutilized
     consolidateAfter: 1m
-    # budgets:
-    #   - nodes: 50%
-    #   - schedule: "0 9 * * mon-fri"
-    #     duration: 8h
-    #     nodes: "0"
   limits:
     cpu: "80"
     memory: 320Gi
