@@ -8,7 +8,7 @@ orbs:
 
 globals:
   - &context platform
-  - &executor-image twdps/circleci-infra-aws:alpine-2025.04
+  - &executor-image twdps/circleci-infra-aws:alpine-2025.06
 
 on-push-main: &on-push-main
   branches:
