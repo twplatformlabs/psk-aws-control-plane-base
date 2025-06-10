@@ -41,7 +41,7 @@ At scale, each role may include multiple clusters. Note that the platform custom
 		* arm and amd NodePools resources defined
 		* target desired architecture with `kubernetes.io/arch` = "arm64" | "amd64"
 * psk-system namespace created
-* admin ClusterRolebinding created for twplatformlabs/twdps-core-labs-team claim
+* admin ClusterRolebinding created for twplatformlabs/platform team claim
 
 ## EKS Best Practices Guides
 
