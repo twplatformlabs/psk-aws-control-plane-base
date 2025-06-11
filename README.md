@@ -59,7 +59,7 @@ The `taint` step results in the MNG nodes updating to the correct, latest patch 
 
 **general data plane ndoes**  
 
-Karpenter managed nodepools will automatically update to the correct, latest patch version each week.  
+Karpenter managed nodepools will schedule an update to the correct, latest patch version each week.  
 
 **TODO**  
 
