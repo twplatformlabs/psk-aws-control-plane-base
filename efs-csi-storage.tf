@@ -1,6 +1,6 @@
 module "efs_csi_storage" {
   source  = "cloudposse/efs/aws"
-  version = "1.1.0"
+  version = "1.2.0"
 
   name = "${var.cluster_name}-efs-csi-storage"
 
