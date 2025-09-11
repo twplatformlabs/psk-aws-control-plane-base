@@ -1,6 +1,6 @@
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "20.36.0"
+  version = "21.2.0"
 
   cluster_name    = var.cluster_name
   cluster_version = var.eks_version
@@ -107,7 +107,7 @@ output "cluster_public_certificate_authority_data" {
 
 module "karpenter" {
   source  = "terraform-aws-modules/eks/aws//modules/karpenter"
-  version = "20.36.0"
+  version = "21.2.0"
 
   cluster_name = module.eks.cluster_name
 
