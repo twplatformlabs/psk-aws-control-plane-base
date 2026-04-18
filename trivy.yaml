@@ -5,3 +5,4 @@ scan:
   skip-dirs:
     - .terraform/modules/eks/examples
     - .terraform/modules/karpenter/examples
+    - test/kube-bench
