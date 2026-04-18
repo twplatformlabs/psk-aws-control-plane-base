@@ -1,5 +1,5 @@
 terraform {
-  required_version = "~> 1.9"
+  required_version = "~> 1.14"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -7,21 +7,26 @@ terraform {
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.36"
+      version = "~> 2.9"
     }
     helm = {
       source  = "hashicorp/helm"
       version = "~> 2.17"
     }
   }
+  # The backend cloud store is managed using the terraform orb tfc-backend command.
+  # this command will generate the appropriate template for the tf workspace:
+  #
+  # terraform {
+  #   cloud {
+  #     organization = "${TFC_ORGANIZATION}"
+  #     hostname = "app.terraform.io"
 
-  backend "remote" {
-    hostname     = "app.terraform.io"
-    organization = "twplatformlabs"
-    workspaces {
-      prefix = "psk-aws-control-plane-base-"
-    }
-  }
+  #     workspaces {
+  #       name = "${TFC_WORKSPACE}"
+  #     }
+  #   }
+  # }
 }
 
 provider "aws" {

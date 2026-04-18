@@ -1,14 +1,16 @@
 version: 2.1
 
 orbs:
-  terraform: twdps/terraform@3.1.1
+  terraform: twdps/terraform@4.0.0
   kube: twdps/kube-ops@1.1.2
   op: twdps/onepassword@3.0.0
-  do: twdps/pipeline-events@5.1.0
+  do: twdps/pipeline-events@5.3.2
 
 globals:
   - &context platform
-  - &executor-image twdps/circleci-infra-aws:alpine-2025.06
+  - &sbx-i01-aws-us-east-1-workspace psk-aws-control-plane-base-sbx-i01-aws-us-east-1
+  - &prod-i01-aws-us-east-2-workspace psk-aws-control-plane-base-prod-i01-aws-us-east-2
+  - &executor-image ghcr.io/twplatformlabs/circleci-infra-aws:alpine-latest
 
 on-push-main: &on-push-main
   branches:
@@ -30,12 +32,18 @@ commands:
       cluster:
         description: cluster and tf workspace name
         type: string
+      workspace:
+        description: terraform cloud workspace
+        type: string
     steps:
       - op/env:
           env-file: op.<< parameters.cluster >>.env
       - op/tpl:
           tpl-path: environments
           tpl-file: << parameters.cluster >>.auto.tfvars.json
+      - terraform/tfc-backend:
+          tfc-organization: twplatformlabs
+          tfc-workspace: << parameters.workspace >>
       - terraform/terraformrc
       - do/bash-functions
 
@@ -63,6 +71,12 @@ commands:
       - run:
           name: run efs storage class tests
           command: bash scripts/efs_storage_class_tests.sh << parameters.cluster >>
+      - run:
+          name: run kube-bench test
+          command: bash scripts/kube_bench_tests.sh << parameters.cluster >>
+      - store_artifacts:
+          path: kube-bench.log
+          destination: kube-bench.log
 
   base-configuration-validation:
     description: write kubeconfig, cluster-url, and base64-certificate-authority-data to vault
@@ -127,23 +141,21 @@ workflows:
       - terraform/static-analysis:
           name: static code analysis
           context: *context
-          executor-image: *executor-image
           trivy-scan: true
           before-static-analysis:
             - set-environment:
                 cluster: sbx-i01-aws-us-east-1
+                workspace: *sbx-i01-aws-us-east-1-workspace
           filters: *on-push-main
 
       - terraform/plan:
           name: plan sbx-i01-aws-us-east-1 changes
           context: *context
-          executor-image: *executor-image
-          workspace: sbx-i01-aws-us-east-1
-          tfc-workspace: psk-aws-control-plane-base-sbx-i01-aws-us-east-1
-          tfc-organization: twplatformlabs
+          workspace: *sbx-i01-aws-us-east-1-workspace
           before-plan:
             - set-environment:
                 cluster: sbx-i01-aws-us-east-1
+                workspace: *sbx-i01-aws-us-east-1-workspace
           filters: *on-push-main
 
       - approve sbx-i01-aws-us-east-1 changes:
@@ -156,11 +168,11 @@ workflows:
       - terraform/apply:
           name: apply sbx-i01-aws-us-east-1 changes
           context: *context
-          executor-image: *executor-image
-          workspace: sbx-i01-aws-us-east-1
+          workspace: *sbx-i01-aws-us-east-1-workspace
           before-apply:
             - set-environment:
                 cluster: sbx-i01-aws-us-east-1
+                workspace: *sbx-i01-aws-us-east-1-workspace
           after-terraform-init:
             - replace-management-node-group-nodes:
                 cluster: sbx-i01-aws-us-east-1
@@ -176,13 +188,11 @@ workflows:
       - terraform/plan:
           name: plan prod-i01-aws-us-east-2 changes
           context: *context
-          executor-image: *executor-image
-          workspace: prod-i01-aws-us-east-2
-          tfc-workspace: psk-aws-control-plane-base-prod-i01-aws-us-east-2
-          tfc-organization: twplatformlabs
+          workspace: *prod-i01-aws-us-east-2-workspace
           before-plan:
             - set-environment:
                 cluster: prod-i01-aws-us-east-2
+                workspace: *prod-i01-aws-us-east-2-workspace
           filters: *on-tag-main
 
       - approve prod-i01-aws-us-east-2 changes:
@@ -194,11 +204,11 @@ workflows:
       - terraform/apply:
           name: apply prod-i01-aws-us-east-2 changes
           context: *context
-          executor-image: *executor-image
-          workspace: prod-i01-aws-us-east-2
+          workspace: *prod-i01-aws-us-east-2-workspace
           before-apply:
             - set-environment:
                 cluster: prod-i01-aws-us-east-2
+                workspace: *prod-i01-aws-us-east-2-workspace
           after-terraform-init:
             - replace-management-node-group-nodes:
                 cluster: prod-i01-aws-us-east-2
