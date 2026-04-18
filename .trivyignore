@@ -25,3 +25,9 @@ AVD-KSV-0039
 AVD-KSV-0040
 # test fixtures using default confoinguration
 AVD-KSV-0118
+# trivy-operator permissions
+AVD-KSV-0048
+AVD-KSV-0047
+AVD-KSV-0049
+AVD-KSV-0113
+AVD-KSV-0041
