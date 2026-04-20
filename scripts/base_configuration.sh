@@ -5,15 +5,15 @@ set -eo pipefail
 cluster_name=$1
 export AWS_REGION=$(jq -er .aws_region "$cluster_name".auto.tfvars.json)
 kubeconfig=$(cat ~/.kube/config | base64)
+eks_efs_csi_storage_id=$(terraform output -raw eks_efs_csi_storage_id)
+karpenter_node_iam_role_name=$(terraform output -raw karpenter_node_iam_role_name)
 
 # store cluster identifiers in 1password vault
 write1passwordField platform "${cluster_name}" kubeconfig-base64 "$kubeconfig"
 write1passwordField platform "${cluster_name}" cluster-url $(terraform output -raw cluster_url)
 write1passwordField platform "${cluster_name}" certificate-authority-data-base64 $(terraform output -raw cluster_public_certificate_authority_data)
-write1passwordField platform "${cluster_name}" eks-efs-csi-storage-id $(terraform output -raw eks_efs_csi_storage_id)
+write1passwordField platform "${cluster_name}" eks-efs-csi-storage-id "$eks_efs_csi_storage_id"
 write1passwordField platform "${cluster_name}" cluster-oidc-issuer-url $(terraform output -raw cluster_oidc_issuer_url)
-eks_efs_csi_storage_id=$(terraform output -raw eks_efs_csi_storage_id)
-karpenter_node_iam_role_name=$(terraform output -raw karpenter_node_iam_role_name)
 
 # apply baseline cluster resources ================================
 
