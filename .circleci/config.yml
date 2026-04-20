@@ -47,6 +47,24 @@ commands:
       - terraform/terraformrc
       - do/bash-functions
 
+  deploy-base-configuration:
+    description: write kubeconfig, cluster-url, and base64-certificate-authority-data to vault
+    parameters:
+      cluster:
+        description: cluster and tf workspace name
+        type: string
+        default: ""
+    steps:
+      - run:
+          name: generate kubeconfig
+          command: bash scripts/generate_kubeconfig.sh << parameters.cluster >>
+      - run:
+          name: store cluster identifiers and apply baseline configuration
+          command: bash scripts/base_configuration.sh << parameters.cluster >>
+      - op/env:
+          env-file: op.<< parameters.cluster >>.env
+
+
   run-integration-tests:
     description: run cluster configuration tests
     parameters:
@@ -73,29 +91,10 @@ commands:
           command: bash scripts/efs_storage_class_tests.sh << parameters.cluster >>
       - run:
           name: run kube-bench test
-          command: bash scripts/kube_bench_tests.sh << parameters.cluster >>
+          command: bash scripts/kube_bench_test.sh << parameters.cluster >>
       - store_artifacts:
           path: kube-bench.log
           destination: kube-bench.log
-
-  base-configuration-validation:
-    description: write kubeconfig, cluster-url, and base64-certificate-authority-data to vault
-    parameters:
-      cluster:
-        description: cluster and tf workspace name
-        type: string
-        default: ""
-    steps:
-      - run:
-          name: generate kubeconfig
-          command: bash scripts/generate_kubeconfig.sh << parameters.cluster >>
-      - run:
-          name: store cluster identifiers and apply baseline configuration
-          command: bash scripts/base_configuration.sh << parameters.cluster >>
-      - op/env:
-          env-file: op.<< parameters.cluster >>.env
-      - run-integration-tests:
-          cluster: << parameters.cluster >>
 
   replace-management-node-group-nodes:
       parameters:
@@ -129,7 +128,6 @@ jobs:
           op-value: platform/<< parameters.cluster>>/kubeconfig-base64
       - run-integration-tests:
           cluster: << parameters.cluster >>
-
 
 workflows:
 
@@ -177,8 +175,10 @@ workflows:
             - replace-management-node-group-nodes:
                 cluster: sbx-i01-aws-us-east-1
           after-apply:
-            - base-configuration-validation:
+            - deploy-base-configuration:
                 cluster: sbx-i01-aws-us-east-1
+            - run-integration-tests:
+                cluster: << parameters.cluster >>
           requires:
             - approve sbx-i01-aws-us-east-1 changes
           filters: *on-push-main
@@ -213,7 +213,9 @@ workflows:
             - replace-management-node-group-nodes:
                 cluster: prod-i01-aws-us-east-2
           after-apply:
-            - base-configuration-validation:
+            - deploy-base-configuration:
+                cluster: prod-i01-aws-us-east-2
+            - run-integration-tests:
                 cluster: prod-i01-aws-us-east-2
             - do/slack-bot:
                 channel: lab-events
