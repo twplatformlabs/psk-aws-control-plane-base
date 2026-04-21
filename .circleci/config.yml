@@ -124,6 +124,7 @@ jobs:
       - checkout
       - set-environment:
           cluster: << parameters.cluster >>
+          workspace: ""
       - kube/op-config:
           op-value: platform/<< parameters.cluster>>/kubeconfig-base64
       - run-integration-tests:
@@ -178,7 +179,7 @@ workflows:
             - deploy-base-configuration:
                 cluster: sbx-i01-aws-us-east-1
             - run-integration-tests:
-                cluster: << parameters.cluster >>
+                cluster: sbx-i01-aws-us-east-1
           requires:
             - approve sbx-i01-aws-us-east-1 changes
           filters: *on-push-main
