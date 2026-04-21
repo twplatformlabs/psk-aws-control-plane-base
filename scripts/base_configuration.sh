@@ -17,8 +17,9 @@ write1passwordField platform "${cluster_name}" cluster-oidc-issuer-url $(terrafo
 
 # apply baseline cluster resources ================================
 
-# create psk-system and karpenter namespaces
+# create psk-system and karpenter namespaces, turn-off default ns service account token automount
 kubectl apply -f tpl/psk-system-namespaces.yaml
+kubectl patch serviceaccount default -p $'automountServiceAccountToken: false'
 
 # create twdps-core-labs-team oidc admin clusterrolebinding
 kubectl apply -f tpl/psk-admin-clusterrolebinding.yaml
