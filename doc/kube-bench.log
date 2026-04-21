@@ -1,0 +1,378 @@
+[INFO] 2 Control Plane Configuration
+[INFO] 2.1 Logging
+[WARN] 2.1.1 Enable audit Logs (Automated)
+
+== Remediations controlplane ==
+2.1.1 audit test did not run: No tests defined
+
+== Summary controlplane ==
+0 checks PASS
+0 checks FAIL
+1 checks WARN
+0 checks INFO
+
+[INFO] 3 Worker Node Security Configuration
+[INFO] 3.1 Worker Node Configuration Files
+[PASS] 3.1.1 Ensure that the kubeconfig file permissions are set to 644 or more restrictive (Automated)
+[PASS] 3.1.2 Ensure that the kubelet kubeconfig file ownership is set to root:root (Automated)
+[PASS] 3.1.3 Ensure that the kubelet configuration file has permissions set to 644 or more restrictive (Automated)
+[PASS] 3.1.4 Ensure that the kubelet configuration file ownership is set to root:root (Automated)
+[INFO] 3.2 Kubelet
+[PASS] 3.2.1 Ensure that the Anonymous Auth is Not Enabled (Automated)
+[PASS] 3.2.2 Ensure that the --authorization-mode argument is not set to AlwaysAllow (Automated)
+[PASS] 3.2.3 Ensure that a Client CA File is Configured (Automated)
+[PASS] 3.2.4 Ensure that the --read-only-port is disabled (Automated)
+[PASS] 3.2.5 Ensure that the --streaming-connection-idle-timeout argument is not set to 0 (Automated)
+[PASS] 3.2.6 Ensure that the --make-iptables-util-chains argument is set to true (Automated)
+[INFO] 3.2.7 Ensure that the --eventRecordQPS argument is set to 0 or a level which ensures appropriate event capture (Automated)
+[PASS] 3.2.8 Ensure that the --rotate-certificates argument is not present or is set to true (Automated)
+[INFO] 3.2.9 Ensure that the RotateKubeletServerCertificate argument is set to true (Automated)
+
+== Summary node ==
+11 checks PASS
+0 checks FAIL
+0 checks WARN
+2 checks INFO
+
+[INFO] 4 Policies
+[INFO] 4.1 RBAC and Service Accounts
+[WARN] 4.1.1 Ensure that the cluster-admin role is only used where required (Automated)
+[WARN] 4.1.2 Minimize access to secrets (Automated)
+[WARN] 4.1.3 Minimize wildcard use in Roles and ClusterRoles (Automated)
+[WARN] 4.1.4 Minimize access to create pods (Automated)
+[WARN] 4.1.5 Ensure that default service accounts are not actively used. ((Automated)
+[WARN] 4.1.6 Ensure that Service Account Tokens are only mounted where necessary (Automated)
+[WARN] 4.1.7 Avoid use of system:masters group (Automated)
+[WARN] 4.1.8 Limit use of the Bind, Impersonate and Escalate permissions in the Kubernetes cluster (Manual)
+[INFO] 4.2 Pod Security Standards
+[WARN] 4.2.1 Minimize the admission of privileged containers (Automated)
+[WARN] 4.2.2 Minimize the admission of containers wishing to share the host process ID namespace (Automated)
+[WARN] 4.2.3 Minimize the admission of containers wishing to share the host IPC namespace (Automated)
+[WARN] 4.2.4 Minimize the admission of containers wishing to share the host network namespace (Automated)
+[WARN] 4.2.5 Minimize the admission of containers with allowPrivilegeEscalation (Automated)
+[INFO] 4.3 CNI Plugin
+[WARN] 4.3.1 Ensure CNI plugin supports network policies (Manual)
+[WARN] 4.3.2 Ensure that all Namespaces have Network Policies defined (Automated)
+[INFO] 4.4 Secrets Management
+[WARN] 4.4.1 Prefer using secrets as files over secrets as environment variables (Automated)
+[WARN] 4.4.2 Consider external secret storage (Manual)
+[INFO] 4.5 General Policies
+[WARN] 4.5.1 Create administrative boundaries between resources using namespaces (Manual)
+[WARN] 4.5.2 Apply Security Context to Your Pods and Containers (Manual)
+[WARN] 4.5.3 The default namespace should not be used (Automated)
+
+== Remediations policies ==
+4.1.1 Identify all clusterrolebindings to the cluster-admin role. Check if they are used and if
+they need this role or if they could use a role with fewer privileges.
+Where possible, first bind users to a lower privileged role and then remove the
+clusterrolebinding to the cluster-admin role :
+kubectl delete clusterrolebinding [name]
+
+4.1.2 Where possible, remove get, list and watch access to secret objects in the cluster.
+
+4.1.3 Where possible replace any use of wildcards in clusterroles and roles with specific
+objects or actions.
+
+4.1.4 Where possible, remove create access to pod objects in the cluster.
+
+4.1.5 Create explicit service accounts wherever a Kubernetes workload requires specific
+access to the Kubernetes API server.
+Modify the configuration of each default service account to include this value
+automountServiceAccountToken: false
+
+Automatic remediation for the default account:
+kubectl patch serviceaccount default -p
+$'automountServiceAccountToken: false'
+
+4.1.6 Modify the definition of pods and service accounts which do not need to mount service
+account tokens to disable it.
+
+4.1.7 Remove the system:masters group from all users in the cluster.
+
+4.1.8 Where possible, remove the impersonate, bind and escalate rights from subjects.
+
+4.2.1 Add policies to each namespace in the cluster which has user workloads to restrict the
+admission of privileged containers.
+To enable PSA for a namespace in your cluster, set the pod-security.kubernetes.io/enforce
+label with the policy value you want to enforce.
+kubectl label --overwrite ns NAMESPACE pod-security.kubernetes.io/enforce=restricted
+The above command enforces the restricted policy for the NAMESPACE namespace.
+You can also enable Pod Security Admission for all your namespaces. For example:
+kubectl label --overwrite ns --all pod-security.kubernetes.io/warn=baseline
+
+4.2.2 Add policies to each namespace in the cluster which has user workloads to restrict the
+admission of hostPID containers.
+
+4.2.3 Add policies to each namespace in the cluster which has user workloads to restrict the
+admission of hostIPC containers.
+
+4.2.4 Add policies to each namespace in the cluster which has user workloads to restrict the
+admission of hostNetwork containers.
+
+4.2.5 Add policies to each namespace in the cluster which has user workloads to restrict the
+admission of containers with .spec.allowPrivilegeEscalation set to true.
+
+4.3.1 As with RBAC policies, network policies should adhere to the policy of least privileged
+access. Start by creating a deny all policy that restricts all inbound and outbound traffic
+from a namespace or create a global policy using Calico.
+
+4.3.2 Follow the documentation and create NetworkPolicy objects as you need them.
+
+4.4.1 If possible, rewrite application code to read secrets from mounted secret files, rather than
+from environment variables.
+
+4.4.2 Refer to the secrets management options offered by your cloud provider or a third-party
+secrets management solution.
+
+4.5.1 Follow the documentation and create namespaces for objects in your deployment as you need
+them.
+
+4.5.2 As a best practice we recommend that you scope the binding for privileged pods to
+service accounts within a particular namespace, e.g. kube-system, and limiting access
+to that namespace. For all other serviceaccounts/namespaces, we recommend
+implementing a more restrictive policy such as this:
+
+apiVersion: policy/v1beta1
+kind: PodSecurityPolicy
+metadata:
+  name: restricted
+  annotations:
+    seccomp.security.alpha.kubernetes.io/allowedProfileNames: 'docker/default,runtime/default'
+    apparmor.security.beta.kubernetes.io/allowedProfileNames: 'runtime/default'
+    seccomp.security.alpha.kubernetes.io/defaultProfileName: 'runtime/default'
+    apparmor.security.beta.kubernetes.io/defaultProfileName: 'runtime/default'
+spec:
+  privileged: false
+  # Required to prevent escalations to root.
+  allowPrivilegeEscalation: false
+  # This is redundant with non-root + disallow privilege escalation,
+  # but we can provide it for defense in depth.
+  requiredDropCapabilities:
+  - ALL
+  # Allow core volume types.
+  volumes:
+  - 'configMap'
+  - 'emptyDir'
+  - 'projected'
+  - 'secret'
+  - 'downwardAPI'
+  # Assume that persistentVolumes set up by the cluster admin are safe to use.
+  - 'persistentVolumeClaim'
+  hostNetwork: false
+  hostIPC: false
+  hostPID: false
+  runAsUser:
+  # Require the container to run without root privileges.
+  rule: 'MustRunAsNonRoot'
+  seLinux:
+  # This policy assumes the nodes are using AppArmor rather than SELinux.
+  rule: 'RunAsAny'
+  supplementalGroups:
+  rule: 'MustRunAs'
+  ranges:
+    # Forbid adding the root group.
+    - min: 1
+      max: 65535
+  fsGroup:
+  rule: 'MustRunAs'
+  ranges:
+    # Forbid adding the root group.
+    - min: 1
+      max: 65535
+  readOnlyRootFilesystem: false
+
+This policy prevents pods from running as privileged or escalating privileges. It also
+restricts the types of volumes that can be mounted and the root supplemental groups
+that can be added.
+Another, albeit similar, approach is to start with policy that locks everything down and
+incrementally add exceptions for applications that need looser restrictions such as
+logging agents which need the ability to mount a host path.
+
+4.5.3 Ensure that namespaces are created to allow for appropriate segregation of Kubernetes
+resources and that all new resources are created in a specific namespace.
+
+
+== Summary policies ==
+0 checks PASS
+0 checks FAIL
+20 checks WARN
+0 checks INFO
+
+[INFO] 5 Managed Services
+[INFO] 5.1 Image Registry and Image Scanning
+[WARN] 5.1.1 Ensure Image Vulnerability Scanning using Amazon ECR image scanning or a third party provider (Automated)
+[WARN] 5.1.2 Minimize user access to Amazon ECR (Manual)
+[WARN] 5.1.3 Minimize cluster access to read-only for Amazon ECR (Manual)
+[WARN] 5.1.4 Minimize Container Registries to only those approved (Manual)
+[INFO] 5.2 Identity and Access Management (IAM)
+[WARN] 5.2.1 Prefer using dedicated Amazon EKS Service Accounts (Automated)
+[INFO] 5.3 AWS EKS Key Management Service
+[WARN] 5.3.1 Ensure Kubernetes Secrets are encrypted using Customer Master Keys (CMKs) managed in AWS KMS (Manual)
+[INFO] 5.4 Cluster Networking
+[WARN] 5.4.1 Restrict Access to the Control Plane Endpoint (Automated)
+[WARN] 5.4.2 Ensure clusters are created with Private Endpoint Enabled and Public Access Disabled (Automated)
+[WARN] 5.4.3 Ensure clusters are created with Private Nodes (Automated)
+[WARN] 5.4.4 Ensure Network Policy is Enabled and set as appropriate (Automated)
+[WARN] 5.4.5 Encrypt traffic to HTTPS load balancers with TLS certificates (Manual)
+[INFO] 5.5 Authentication and Authorization
+[WARN] 5.5.1 Manage Kubernetes RBAC users with AWS IAM Authenticator for Kubernetes or Upgrade to AWS CLI v1.16.156 or greater (Manual)
+
+== Remediations managedservices ==
+5.1.1 To utilize AWS ECR for Image scanning please follow the steps below:
+
+To create a repository configured for scan on push (AWS CLI):
+aws ecr create-repository --repository-name $REPO_NAME --image-scanning-configuration scanOnPush=true --region $REGION_CODE
+
+To edit the settings of an existing repository (AWS CLI):
+aws ecr put-image-scanning-configuration --repository-name $REPO_NAME --image-scanning-configuration scanOnPush=true --region $REGION_CODE
+
+Use the following steps to start a manual image scan using the AWS Management Console.
+
+1.  Open the Amazon ECR console at https://console.aws.amazon.com/ecr/repositories.
+2.  From the navigation bar, choose the Region to create your repository in.
+3.  In the navigation pane, choose Repositories.
+4.  On the Repositories page, choose the repository that contains the image to scan.
+5.  On the Images page, select the image to scan and then choose Scan.
+
+5.1.2 Before you use IAM to manage access to Amazon ECR, you should understand what IAM features
+are available to use with Amazon ECR. To get a high-level view of how Amazon ECR and other
+AWS services work with IAM, see AWS Services That Work with IAM in the IAM User Guide.
+
+5.1.3 You can use your Amazon ECR images with Amazon EKS, but you need to satisfy the following prerequisites.
+
+The Amazon EKS worker node IAM role (NodeInstanceRole) that you use with your worker nodes must possess
+the following IAM policy permissions for Amazon ECR.
+
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Effect": "Allow",
+            "Action": [
+                "ecr:BatchCheckLayerAvailability",
+                "ecr:BatchGetImage",
+                "ecr:GetDownloadUrlForLayer",
+                "ecr:GetAuthorizationToken"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+
+5.1.4 To minimize AWS ECR container registries to only those approved, you can follow these steps:
+
+1.  Define your approval criteria: Determine the criteria that containers must meet to
+    be considered approved. This can include factors such as security, compliance,
+    compatibility, and other requirements.
+2.  Identify all existing ECR registries: Identify all ECR registries that are currently
+    being used in your organization.
+3.  Evaluate ECR registries against approval criteria: Evaluate each ECR registry
+    against your approval criteria to determine whether it should be approved or not.
+    This can be done by reviewing the registry settings and configuration, as well as
+    conducting security assessments and vulnerability scans.
+4.  Establish policies and procedures: Establish policies and procedures that outline
+    how ECR registries will be approved, maintained, and monitored. This should
+    include guidelines for developers to follow when selecting a registry for their
+    container images.
+5.  Implement access controls: Implement access controls to ensure that only
+    approved ECR registries are used to store and distribute container images. This
+    can be done by setting up IAM policies and roles that restrict access to
+    unapproved registries or create a whitelist of approved registries.
+6.  Monitor and review: Continuously monitor and review the use of ECR registries
+    to ensure that they continue to meet your approval criteria. This can include
+
+5.2.1 With IAM roles for service accounts on Amazon EKS clusters, you can associate an
+IAM role with a Kubernetes service account. This service account can then provide
+AWS permissions to the containers in any pod that uses that service account. With this
+feature, you no longer need to provide extended permissions to the worker node IAM
+role so that pods on that node can call AWS APIs.
+Applications must sign their AWS API requests with AWS credentials. This feature
+provides a strategy for managing credentials for your applications, similar to the way
+that Amazon EC2 instance profiles provide credentials to Amazon EC2 instances.
+Instead of creating and distributing your AWS credentials to the containers or using the
+Amazon EC2 instance’s role, you can associate an IAM role with a Kubernetes service
+account. The applications in the pod’s containers can then use an AWS SDK or the
+AWS CLI to make API requests to authorized AWS services.
+
+The IAM roles for service accounts feature provides the following benefits:
+
+- Least privilege - By using the IAM roles for service accounts feature, you no
+  longer need to provide extended permissions to the worker node IAM role so that
+  pods on that node can call AWS APIs. You can scope IAM permissions to a
+  service account, and only pods that use that service account have access to
+  those permissions. This feature also eliminates the need for third-party solutions
+  such as kiam or kube2iam.
+- Credential isolation - A container can only retrieve credentials for the IAM role
+  that is associated with the service account to which it belongs. A container never
+  has access to credentials that are intended for another container that belongs to
+  another pod.
+- Audit-ability - Access and event logging is available through CloudTrail to help
+  ensure retrospective auditing.
+
+5.3.1 This process can only be performed during Cluster Creation.
+
+Enable 'Secrets Encryption' during Amazon EKS cluster creation as described
+in the links within the 'References' section.
+
+5.4.1 By enabling private endpoint access to the Kubernetes API server, all communication
+between your nodes and the API server stays within your VPC. You can also limit the IP
+addresses that can access your API server from the internet, or completely disable
+internet access to the API server.
+With this in mind, you can update your cluster accordingly using the AWS CLI to ensure
+that Private Endpoint Access is enabled.
+If you choose to also enable Public Endpoint Access then you should also configure a
+list of allowable CIDR blocks, resulting in restricted access from the internet. If you
+specify no CIDR blocks, then the public API server endpoint is able to receive and
+process requests from all IP addresses by defaulting to ['0.0.0.0/0'].
+For example, the following command would enable private access to the Kubernetes
+API as well as limited public access over the internet from a single IP address (noting
+the /32 CIDR suffix):
+aws eks update-cluster-config --region $AWS_REGION --name $CLUSTER_NAME --resources-vpc-config endpointPrivateAccess=true,endpointPrivateAccess=true,publicAccessCidrs="203.0.113.5/32"
+
+Note: The CIDR blocks specified cannot include reserved addresses.
+There is a maximum number of CIDR blocks that you can specify. For more information,
+see the EKS Service Quotas link in the references section.
+For more detailed information, see the EKS Cluster Endpoint documentation link in the
+references section.
+
+5.4.2 By enabling private endpoint access to the Kubernetes API server, all communication
+between your nodes and the API server stays within your VPC.
+With this in mind, you can update your cluster accordingly using the AWS CLI to ensure
+that Private Endpoint Access is enabled.
+For example, the following command would enable private access to the Kubernetes
+API and ensure that no public access is permitted:
+aws eks update-cluster-config --region $AWS_REGION --name $CLUSTER_NAME --resources-vpc-config endpointPrivateAccess=true,endpointPublicAccess=false
+
+Note: For more detailed information, see the EKS Cluster Endpoint documentation link
+in the references section.
+
+5.4.3 aws eks update-cluster-config \
+  --region region-code \
+  --name my-cluster \
+  --resources-vpc-config endpointPublicAccess=true,publicAccessCidrs="203.0.113.5/32",endpointPrivateAccess=true
+
+5.4.4 Utilize Calico or other network policy engine to segment and isolate your traffic.
+
+5.4.5 Your load balancer vendor can provide details on configuring HTTPS with TLS.
+
+5.5.1 Refer to the 'Managing users or IAM roles for your cluster' in Amazon EKS documentation.
+
+Note: If using AWS CLI version 1.16.156 or later there is no need to install the AWS
+IAM Authenticator anymore.
+The relevant AWS CLI commands, depending on the use case, are:
+aws eks update-kubeconfig
+aws eks get-token
+
+
+== Summary managedservices ==
+0 checks PASS
+0 checks FAIL
+12 checks WARN
+0 checks INFO
+
+== Summary total ==
+11 checks PASS
+0 checks FAIL
+33 checks WARN
+2 checks INFO
+
