@@ -251,6 +251,6 @@ Karpenter managed nodepools will schedule an update to the correct, latest patch
 **TODO**  
 
 * observability solution to replace datadog not yet implemented
-* AWS GuardDUty	
+* eks-addons vpc-cni, ebs-csi, and efs-csi are not yet deployed using the pod identity manager method in the lastest module.
 * currently the "taint" logic for refresh of management node group nodes is based on a value in the environment file. Which means that it is just on or off. The reason for this is that when creating a new cluster there are no node groups to taint so a command to do so will fail so you must set it true or false in the code based on the cluster (or cluster role if scaled). A better solution would be to have a test that can determine if the cluster does not yet exist and thereby skip the taint, successfully.
 
