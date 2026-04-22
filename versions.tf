@@ -3,15 +3,15 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 5.94"
+      version = "~> 6.40"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 2.9"
+      version = "~> 3.1"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 2.17"
+      version = "~> 2.9"
     }
   }
   # The backend cloud store is managed using the terraform orb tfc-backend command.
