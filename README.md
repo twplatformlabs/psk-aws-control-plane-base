@@ -238,7 +238,7 @@ See [implementation notes](EKS-Best-Practices-Guides.md).
 
 **upgrade kubernetes and addon version**  
 
-Change `eks_version` in the environments json to initiate upgrade to new EKS version. Addons will automatically update to the correct, latest version with each pipeline run.  
+Change `kubernetes_version` in the environments json to initiate upgrade to new EKS version. Addons will automatically update to the correct, latest version with each pipeline run.  
 
 **managment node group**  
 
