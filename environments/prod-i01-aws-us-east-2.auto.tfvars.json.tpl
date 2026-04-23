@@ -19,7 +19,7 @@
   "management_node_group_min_size": "1",
   "management_node_group_instance_types": ["t4g.2xlarge","m6g.2xlarge","m7g.2xlarge","m8g.2xlarge"],
 
-  "karpenter_chart_version": "1.4.0",
+  "karpenter_chart_version": "1.11.0",
 
   "oidc_client_id": "{{ op://platform/svc-auth0/pskctl-cli-client-id }}",
   "oidc_groups_claim": "https://github.org/twplatformlabs/teams",

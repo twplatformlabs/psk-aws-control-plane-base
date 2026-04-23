@@ -1,6 +1,3 @@
-serviceAccount:
-  annotations:
-    eks.amazonaws.com/role-arn: ${iam_role_arn}
 imagePullPolicy: Always
 podDisruptionBudget:
   maxUnavailable: 1
@@ -16,6 +13,3 @@ settings:
   clusterName: ${cluster_name}
   clusterEndpoint: ${cluster_endpoint}
   interruptionQueue: ${queue_name}
-  featureGates:
-    drift: true
-    spotToSpotConsolidation: true
