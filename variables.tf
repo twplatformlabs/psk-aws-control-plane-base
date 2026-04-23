@@ -26,12 +26,12 @@ variable "enable_log_types" {
   type        = list(string)
 }
 
-variable "eks_version" {
+variable "kubernetes_version" {
   description = "EKS-kubernetes control plane version"
   type        = string
 
   validation {
-    condition     = can(regex("^1.[2-3][0-9]$", var.eks_version))
+    condition     = can(regex("^1.[2-3][0-9]$", var.kubernetes_version))
     error_message = "Invalid EKS version number"
   }
 }

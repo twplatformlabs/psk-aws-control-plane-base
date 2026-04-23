@@ -6,7 +6,7 @@ tfvars = JSON.parse(File.read('./' + ENV['CLUSTER'] + '.auto.tfvars.json'))
 describe eks(tfvars["cluster_name"]) do
   it { should exist }
   it { should be_active }
-  its(:version) { should eq tfvars['eks_version'] }
+  its(:version) { should eq tfvars['kubernetes_version'] }
 end
 
 describe iam_role(tfvars["cluster_name"] + '-vpc-cni') do
