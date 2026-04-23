@@ -9,11 +9,10 @@
   "node_subnet_identifier": "node",
   "intra_subnet_identifier": "intra",
 
-  "auto_refresh_management_node_group": "true",
+  "management_node_group_use_latest_ami_release_version": "true",
   "management_node_group_name": "management-arm-rkt-mng",
   "management_node_group_role": "management",
   "management_node_group_ami_type": "BOTTLEROCKET_ARM_64",
-  "management_node_group_disk_size": "50",
   "management_node_group_capacity_type": "SPOT",
   "management_node_group_desired_size": "1",
   "management_node_group_max_size": "3",
