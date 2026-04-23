@@ -96,20 +96,23 @@ commands:
           path: kube-bench.log
           destination: kube-bench.log
 
-  replace-management-node-group-nodes:
-      parameters:
-        cluster:
-          description: cluster and tf workspace name
-          type: string
-          default: ""
-      steps:
-        - run:
-            name: taint eks-managed-nodegroup for complete refresh to latest AWS managed EKS-optimized ami
-            command: |
-              export TAINT=$(jq -er .auto_refresh_management_node_group << parameters.cluster >>.auto.tfvars.json)
-              # if [[ "$TAINT" == "true" ]]; then
-              #   terraform taint "module.eks.module.eks_managed_node_group[\"management-arm-rkt-mng\"].aws_eks_node_group.this[0]"
-              # fi
+  # this is now a built in feature to swap nodes when a new ami is available during tf apply
+  # without needing to taint the nodes. AWS release new images roughly every two weeks so
+  # if that release cycle is often enough, then you wouldn't need to force it more often.
+  # replace-management-node-group-nodes:
+  #     parameters:
+  #       cluster:
+  #         description: cluster and tf workspace name
+  #         type: string
+  #         default: ""
+  #     steps:
+  #       - run:
+  #           name: taint eks-managed-nodegroup for complete refresh to latest AWS managed EKS-optimized ami
+  #           command: |
+  #             export TAINT=$(jq -er .auto_refresh_management_node_group << parameters.cluster >>.auto.tfvars.json)
+  #             if [[ "$TAINT" == "true" ]]; then
+  #               terraform taint "module.eks.module.eks_managed_node_group[\"management-arm-rkt-mng\"].aws_eks_node_group.this[0]"
+  #             fi
 
 jobs:
 
@@ -172,9 +175,6 @@ workflows:
             - set-environment:
                 cluster: sbx-i01-aws-us-east-1
                 workspace: *sbx-i01-aws-us-east-1-workspace
-          after-terraform-init:
-            - replace-management-node-group-nodes:
-                cluster: sbx-i01-aws-us-east-1
           after-apply:
             - deploy-base-configuration:
                 cluster: sbx-i01-aws-us-east-1
@@ -210,9 +210,6 @@ workflows:
             - set-environment:
                 cluster: prod-i01-aws-us-east-2
                 workspace: *prod-i01-aws-us-east-2-workspace
-          after-terraform-init:
-            - replace-management-node-group-nodes:
-                cluster: prod-i01-aws-us-east-2
           after-apply:
             - deploy-base-configuration:
                 cluster: prod-i01-aws-us-east-2
