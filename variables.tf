@@ -70,13 +70,13 @@ variable "management_node_group_ami_type" {
   }
 }
 
-variable "management_node_group_disk_size" {
-  type = string
-  validation {
-    condition     = can(regex("^[1-9][0-9]$", var.management_node_group_disk_size))
-    error_message = "Invalid node disk size. Use value between 10 to 99gb."
-  }
-}
+# variable "management_node_group_disk_size" {
+#   type = string
+#   validation {
+#     condition     = can(regex("^[1-9][0-9]$", var.management_node_group_disk_size))
+#     error_message = "Invalid node disk size. Use value between 10 to 99gb."
+#   }
+# }
 
 variable "management_node_group_capacity_type" {
   type = string
@@ -113,6 +113,11 @@ variable "management_node_group_min_size" {
 variable "management_node_group_instance_types" {
   description = "list of allowable ec2 instance types"
   type        = list(string)
+}
+
+variable "management_node_group_use_latest_ami_release_version" {
+  description = "automatically refresh management node group if newer AWS managed AMI is available"
+  type        = bool
 }
 
 variable "karpenter_chart_version" {

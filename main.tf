@@ -38,14 +38,13 @@ module "eks" {
       force_update_version           = true
       enable_monitoring              = true
       enable_efa_support             = false
-      use_latest_ami_release_version = true
+      use_latest_ami_release_version = var.management_node_group_use_latest_ami_release_version
       ami_type       = var.management_node_group_ami_type
       instance_types = var.management_node_group_instance_types
       capacity_type  = var.management_node_group_capacity_type
       min_size       = var.management_node_group_min_size
       max_size       = var.management_node_group_max_size
       desired_size   = var.management_node_group_desired_size
-      disk_size      = var.management_node_group_disk_size
       labels = {
         "nodegroup"               = var.management_node_group_name
         "node.kubernetes.io/role" = var.management_node_group_role
