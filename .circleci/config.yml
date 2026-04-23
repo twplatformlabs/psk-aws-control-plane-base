@@ -107,9 +107,9 @@ commands:
             name: taint eks-managed-nodegroup for complete refresh to latest AWS managed EKS-optimized ami
             command: |
               export TAINT=$(jq -er .auto_refresh_management_node_group << parameters.cluster >>.auto.tfvars.json)
-              if [[ "$TAINT" == "true" ]]; then
-                terraform taint "module.eks.module.eks_managed_node_group[\"management-arm-rkt-mng\"].aws_eks_node_group.this[0]"
-              fi
+              # if [[ "$TAINT" == "true" ]]; then
+              #   terraform taint "module.eks.module.eks_managed_node_group[\"management-arm-rkt-mng\"].aws_eks_node_group.this[0]"
+              # fi
 
 jobs:
 
