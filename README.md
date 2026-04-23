@@ -83,25 +83,33 @@ flowchart LR
 
 ```
 
-* control plane logging default = "api", "audit", "authenticator", "controllerManager", "scheduler"
-* control plan internals encrypted using aws managed kms key
-* arm-based Managed Node Group for dedicated management pool with specific toleration requirements
-* eks addons:
-  * vpc-cni
-  * coredns
-  * kube-proxy
-  * aws-ebs-csi-driver
-		* default storage class target provisioned, by convention = `$cluster_name-ebs-csi-storage-class`
-	* aws-efs-csi-driver
-		* efs file share created
-		* default storage class provisioned, by convention = `$cluster_name-efs-csi-storage-class`
-		* filesystem-id stored in 1password, make discoverable via platforms/clusters API
-	* karpenter
-		* sqs and eventbridge managed disruption events
-		* arm and amd NodePools resources defined
-			* target desired architecture with `kubernetes.io/arch` = "arm64" | "amd64"
-* psk-system namespace created
-* admin ClusterRolebinding created for twplatformlabs/platform team claim
+1. ARM Arch Managed Node Group for dedicated management pool with specific toleration requirement.
+
+```yaml
+nodeSelector:
+	"node.kubernetes.io/role": "management"
+tolerations:
+	key: "dedicated"
+	operator: "Equal"
+	value: "management"
+	effect: "NoSchedule"
+```
+2. AWS managed EKS Addons
+
+* vpc-cni
+* coredns
+* aws-ebs-csi-driver
+* aws-efs-csi-driver
+	* common efs target created, filesystem-id stored in 1password, make discoverable via platforms/clusters API
+* karpenter
+	* sqs and eventbridge managed disruption events
+	* arm and amd NodePools resources defined
+		* target desired architecture with `kubernetes.io/arch` = "arm64" | "amd64"
+
+3. psk-system namespace created
+4. admin ClusterRolebinding created for twplatformlabs/platform team claim
+
+Release tags based off kubernetes_version; e.g., When using kubernetes_version=1.34 the release tags will be 1.34.xx.   
 
 ## Authentication modes
 ```mermaid
@@ -235,17 +243,18 @@ flowchart LR
 
 ## EKS Best Practices Guides
 
-See [implementation notes](EKS-Best-Practices-Guides.md).  
+See [implementation notes](doc/Essential-EKS-Best-Practices-Reference.md).  
+See release pipelin artifacts for kube-bench scan results
 
 ## Maintainers
+
+**node lifecycles**  
+
+Cluster services run on the ARM-based management node group. This node group uses the `use_latest_ami_release_version` setting to refresh nodes to latest AMI on each pipeline run.  
 
 **upgrade kubernetes and addon version**  
 
 Change `kubernetes_version` in the environments json to initiate upgrade to new EKS version. Addons will automatically update to the correct, latest version with each pipeline run.  
-
-**managment node group**  
-
-The `taint` step results in the MNG nodes updating to the correct, latest patch version.  
 
 **general data plane ndoes**  
 
@@ -256,4 +265,3 @@ Karpenter managed nodepools will schedule an update to the correct, latest patch
 * observability solution to replace datadog not yet implemented
 * eks-addons vpc-cni, ebs-csi, and efs-csi don'tyet have a recommended pattern for using the pod identity manager method.
 * currently the "taint" logic for refresh of management node group nodes is based on a value in the environment file. Which means that it is just on or off. The reason for this is that when creating a new cluster there are no node groups to taint so a command to do so will fail so you must set it true or false in the code based on the cluster (or cluster role if scaled). A better solution would be to have a test that can determine if the cluster does not yet exist and thereby skip the taint, successfully.
-
