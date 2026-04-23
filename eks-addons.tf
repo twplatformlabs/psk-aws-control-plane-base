@@ -14,7 +14,7 @@ module "eks_addons" {
 
     vpc-cni = {
       most_recent              = true
-      service_account_role_arn = module.vpc_cni_irsa_role.iam_role_arn
+      service_account_role_arn = module.vpc_cni_irsa_role.arn
     }
 
     coredns = {
@@ -39,7 +39,7 @@ module "eks_addons" {
 
     aws-ebs-csi-driver = {
       most_recent              = true
-      service_account_role_arn = module.ebs_csi_irsa_role.iam_role_arn
+      service_account_role_arn = module.ebs_csi_irsa_role.arn
       configuration_values = jsonencode({
         controller = {
           nodeSelector = {
@@ -59,7 +59,7 @@ module "eks_addons" {
 
     aws-efs-csi-driver = {
       most_recent              = true
-      service_account_role_arn = module.efs_csi_irsa_role.iam_role_arn
+      service_account_role_arn = module.efs_csi_irsa_role.arn
       configuration_values = jsonencode({
         controller = {
           nodeSelector = {
@@ -82,11 +82,13 @@ module "eks_addons" {
 }
 
 module "vpc_cni_irsa_role" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.58.0"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts"
+  version = "6.4.0"
 
-  role_path             = "/PSKRoles/"
-  role_name             = "${var.cluster_name}-vpc-cni"
+  path             = "/PSKRoles/"
+  name             = "${var.cluster_name}-vpc-cni"
+  use_name_prefix  = false
+
   attach_vpc_cni_policy = true
   vpc_cni_enable_ipv4   = true
 
@@ -99,11 +101,12 @@ module "vpc_cni_irsa_role" {
 }
 
 module "ebs_csi_irsa_role" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.58.0"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts"
+  version = "6.4.0"
 
-  role_path             = "/PSKRoles/"
-  role_name             = "${var.cluster_name}-ebs-csi-controller-sa"
+  path             = "/PSKRoles/"
+  name             = "${var.cluster_name}-ebs-csi-controller-sa"
+  use_name_prefix  = false
   attach_ebs_csi_policy = true
 
   oidc_providers = {
@@ -115,11 +118,12 @@ module "ebs_csi_irsa_role" {
 }
 
 module "efs_csi_irsa_role" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts-eks"
-  version = "5.58.0"
+  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts"
+  version = "6.4.0"
 
-  role_path             = "/PSKRoles/"
-  role_name             = "${var.cluster_name}-efs-csi-controller-sa"
+  path             = "/PSKRoles/"
+  name             = "${var.cluster_name}-efs-csi-controller-sa"
+  use_name_prefix  = false
   attach_efs_csi_policy = true
 
   oidc_providers = {
@@ -129,3 +133,8 @@ module "efs_csi_irsa_role" {
     }
   }
 }
+
+
+  # terraform state rm 'module.vpc_cni_irsa_role.aws_iam_role_policy_attachment.*'
+  # terraform state rm 'module.ebs_csi_irsa_role.aws_iam_role_policy_attachment.*'
+  # terraform state rm 'module.efs_csi_irsa_role.aws_iam_role_policy_attachment.*'
