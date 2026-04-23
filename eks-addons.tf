@@ -133,8 +133,3 @@ module "efs_csi_irsa_role" {
     }
   }
 }
-
-
-  # terraform state rm 'module.vpc_cni_irsa_role.aws_iam_role_policy_attachment.*'
-  # terraform state rm 'module.ebs_csi_irsa_role.aws_iam_role_policy_attachment.*'
-  # terraform state rm 'module.efs_csi_irsa_role.aws_iam_role_policy_attachment.*'
