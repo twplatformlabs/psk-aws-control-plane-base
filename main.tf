@@ -1,12 +1,12 @@
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "21.1.0"
+  version = "21.17.1"
 
-  cluster_name    = var.cluster_name
-  cluster_version = var.eks_version
+  name               = var.cluster_name
+  kubernetes_version = var.kubernetes_version
 
-  cluster_endpoint_public_access = true
-  authentication_mode            = "API"
+  endpoint_public_access = true
+  authentication_mode    = "API"
 
   access_entries = {
     clusterAdmin = {
@@ -26,21 +26,19 @@ module "eks" {
   subnet_ids               = data.aws_subnets.cluster_private_subnets.ids
   control_plane_subnet_ids = data.aws_subnets.cluster_intra_subnets.ids
 
-  cluster_enabled_log_types = var.enable_log_types
-  create_kms_key            = true
+  enabled_log_types = var.enable_log_types
+  create_kms_key    = true
 
   # For longer cluster names using the prefix goes over 38 char limit
   iam_role_use_name_prefix = false
 
-  eks_managed_node_group_defaults = {
-    version              = var.eks_version
-    force_update_version = true
-    enable_monitoring    = true
-  }
-
   eks_managed_node_groups = {
     # dedicated mgmt node group, other node groups managed by karpenter
     (var.management_node_group_name) = {
+      force_update_version           = true
+      enable_monitoring              = true
+      enable_efa_support             = false
+      use_latest_ami_release_version = true
       ami_type       = var.management_node_group_ami_type
       instance_types = var.management_node_group_instance_types
       capacity_type  = var.management_node_group_capacity_type
@@ -92,9 +90,45 @@ resource "aws_eks_identity_provider_config" "auth0_oidc_config" {
   depends_on = [module.eks]
 }
 
+output "cluster_name" {
+  value = module.eks.cluster_name
+}
+
+output "cluster_arn" {
+  value = module.eks.cluster_arn
+}
+
 output "cluster_url" {
   description = "Endpoint for EKS control plane."
   value       = module.eks.cluster_endpoint
+}
+
+output "cluster_platform_version" {
+  value = module.eks.cluster_platform_version
+}
+
+output "cluster_version" {
+  value = module.eks.cluster_version
+}
+
+output "cluster_security_group_id" {
+  value = module.eks.cluster_security_group_id
+}
+
+output "cluster_ip_family" {
+  value = module.eks.cluster_ip_family
+}
+
+output "cluster_eks_managed_node_groups" {
+  value = module.eks.eks_managed_node_groups
+}
+
+output "cluster_kms_key_arn" {
+  value = module.eks.kms_key_arn
+}
+
+output "cluster_kms_key_id" {
+  value = module.eks.kms_key_id
 }
 
 output "cluster_oidc_issuer_url" {
@@ -107,11 +141,9 @@ output "cluster_public_certificate_authority_data" {
 
 module "karpenter" {
   source  = "terraform-aws-modules/eks/aws//modules/karpenter"
-  version = "20.36.0"
+  version = "21.17.1"
 
   cluster_name = module.eks.cluster_name
-
-  enable_pod_identity             = true
   create_pod_identity_association = true
 
   node_iam_role_additional_policies = {
