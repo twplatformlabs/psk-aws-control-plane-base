@@ -4,7 +4,7 @@
   "aws_assume_role": "PSKRoles/PSKControlPlaneBaseRole",
   "aws_region": "us-east-2",
 
-  "kubernetes_version": "1.33",
+  "kubernetes_version": "1.34",
   "enable_log_types": ["api","audit","authenticator","controllerManager","scheduler"],
   "node_subnet_identifier": "node",
   "intra_subnet_identifier": "intra",

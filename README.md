@@ -244,24 +244,28 @@ flowchart LR
 ## EKS Best Practices Guides
 
 See [implementation notes](doc/Essential-EKS-Best-Practices-Reference.md).  
-See release pipelin artifacts for kube-bench scan results
+See release pipelin artifacts for kube-bench scan results in pipeline artifacts.  
 
 ## Maintainers
 
-**node lifecycles**  
+**Release version tag based on Kubernetes version**  
 
-Cluster services run on the ARM-based management node group. This node group uses the `use_latest_ami_release_version` setting to refresh nodes to latest AMI on each pipeline run.  
+The semantic tag  convention for the control_plane_base pipeline is to set the major and minor based on the kubernetes version. The patch octet is used for each additional incremental update.  
+
+Example: The initial upgrade release tag for kubernetes v1.34 will be 1.34.0, with 1-x for subsequent changes released between then and the Kubernetes v1.35 release.  
 
 **upgrade kubernetes and addon version**  
 
 Change `kubernetes_version` in the environments json to initiate upgrade to new EKS version. Addons will automatically update to the correct, latest version with each pipeline run.  
 
-**general data plane ndoes**  
+**node lifecycles**  
 
-Karpenter managed nodepools will schedule an update to the correct, latest patch version each week.  
+Cluster services run on the ARM-based management node group. This node group uses the `use_latest_ami_release_version` setting to refresh nodes to the newest AMI on a pipeline run if one is available.  
+
+Karpenter node pools are configured to automatically replace nodes older than 7 days.  
 
 **TODO**  
 
-* observability solution to replace datadog not yet implemented
-* eks-addons vpc-cni, ebs-csi, and efs-csi don'tyet have a recommended pattern for using the pod identity manager method.
-* currently the "taint" logic for refresh of management node group nodes is based on a value in the environment file. Which means that it is just on or off. The reason for this is that when creating a new cluster there are no node groups to taint so a command to do so will fail so you must set it true or false in the code based on the cluster (or cluster role if scaled). A better solution would be to have a test that can determine if the cluster does not yet exist and thereby skip the taint, successfully.
+* Moving forward with using only a simple per-cluster observability solution in order to be able to support more thorough Starterkit examples. When that is in place, should see base-specific configuration managed here.
+* eks-addons vpc-cni, ebs-csi, and efs-csi don't yet have a recommended pattern for using the pod identity manager method.
+* The current Module-based node lifecycle for the management group (`use_latest_ami_release_version`) only replaces nodes when newer release version are available. This averages about 2-3 weeks per release. A more secure approach is to have a scheduled run (weekly or similar) where the managed node group for a zero-downtime replacement. The Terraform `taint` command can be used to mark the group for replace with the next TF apply, and there are other potential ways as well.
