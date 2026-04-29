@@ -19,7 +19,7 @@ spec:
           effect: "NoSchedule"
       containers:
         - name: kube-bench
-          image: docker.io/aquasec/kube-bench:latest
+          image: docker.io/aquasec/kube-bench:v0.15.1
           command:
             [
               "kube-bench",

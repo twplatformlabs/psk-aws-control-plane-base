@@ -258,6 +258,8 @@ Example: The initial upgrade release tag for kubernetes v1.34 will be 1.34.0, wi
 
 Change `kubernetes_version` in the environments json to initiate upgrade to new EKS version. Addons will automatically update to the correct, latest version with each pipeline run.  
 
+Karpenter is pinned to a value in the tfvars file. Update the version to perform the helm upgrade after reviewing the upgrade requirements. The kube-bench test is currently pinned to a Aquasec kube-bench image in the deployment manifest. Ongoing benchmark assessment is performed by the Trivy operator.   
+
 **node lifecycles**  
 
 Cluster services run on the ARM-based management node group. This node group uses the `use_latest_ami_release_version` setting to refresh nodes to the newest AMI on a pipeline run if one is available.  
