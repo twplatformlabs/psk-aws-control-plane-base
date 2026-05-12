@@ -133,3 +133,11 @@ module "efs_csi_irsa_role" {
     }
   }
 }
+
+# Pod-identity for the Crossplane provider. See psk-platform-ext-crossplane for details
+resource "aws_eks_pod_identity_association" "crossplane_provider" {
+  cluster_name    = var.cluster_name
+  namespace       = "crossplane-system"
+  service_account = "upbound-provider-family-aws"
+  role_arn        = data.aws_iam_role.crossplane_provider.arn
+}

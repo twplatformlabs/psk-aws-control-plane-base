@@ -106,8 +106,9 @@ tolerations:
 	* arm and amd NodePools resources defined
 		* target desired architecture with `kubernetes.io/arch` = "arm64" | "amd64"
 
-3. psk-system namespace created
+3. psk-system and karpenter namespaces created
 4. admin ClusterRolebinding created for twplatformlabs/platform team claim
+5. aws_eks_pod_identity_association to PSKCrossplaneProviderRole created for service account `upbound-provider-family-aws`
 
 Release tags based off kubernetes_version; e.g., When using kubernetes_version=1.34 the release tags will be 1.34.xx.   
 

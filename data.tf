@@ -31,3 +31,7 @@ data "aws_subnets" "cluster_intra_subnets" {
     Tier = var.intra_subnet_identifier
   }
 }
+
+data "aws_iam_role" "crossplane_provider" {
+  name = "PSKCrossplaneProviderRole"
+}
