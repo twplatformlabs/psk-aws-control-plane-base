@@ -5,6 +5,7 @@ metadata:
   name: psk-system
   labels:
     app.kubernetes.io/managed-by: psk-aws-control-plane-base
+    platform-vault: "true"
 
 ---
 apiVersion: v1
