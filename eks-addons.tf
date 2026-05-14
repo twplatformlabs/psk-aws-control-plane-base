@@ -141,3 +141,7 @@ resource "aws_eks_pod_identity_association" "crossplane_provider" {
   service_account = "upbound-provider-family-aws"
   role_arn        = data.aws_iam_role.crossplane_provider.arn
 }
+
+output "crossplane_provider_role_arn" {
+  value = data.aws_iam_role.crossplane_provider.arn
+}

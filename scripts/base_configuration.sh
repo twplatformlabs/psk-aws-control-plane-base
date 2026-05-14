@@ -6,8 +6,12 @@ cluster_name=$1
 export AWS_REGION=$(jq -er .aws_region "$cluster_name".auto.tfvars.json)
 kubeconfig=$(cat ~/.kube/config | base64)
 eks_efs_csi_storage_id=$(terraform output -raw eks_efs_csi_storage_id)
+crossplane_provider_role_arn=$(terraform output -raw crossplane_provider_role_arn)
 karpenter_node_iam_role_name=$(terraform output -raw karpenter_node_iam_role_name)
+export aws_assume_role=$(jq -er .aws_assume_role "$cluster_name".auto.tfvars.json)
+# export AWS_DEFAULT_REGION=$(jq -er .aws_region "$cluster_name".auto.tfvars.json)
 
+awsAssumeRole "${aws_account_id}" "${aws_assume_role}"
 # store cluster identifiers in 1password vault
 write1passwordField platform "${cluster_name}" kubeconfig-base64 "$kubeconfig"
 write1passwordField platform "${cluster_name}" cluster-url $(terraform output -raw cluster_url)
@@ -20,6 +24,20 @@ write1passwordField platform "${cluster_name}" cluster-oidc-issuer-url $(terrafo
 # create psk-system and karpenter namespaces, turn-off default ns service account token automount
 kubectl apply -f tpl/psk-system-namespaces.yaml
 kubectl patch serviceaccount default -p $'automountServiceAccountToken: false'
+
+# cluster details configmap, used by later argo deployments
+cat <<EOF > tpl/cluster-info.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-info
+  namespace: default
+data:
+  clusterName: $cluster_name
+  crossplaneRoleArn: $crossplane_provider_role_arn
+  region: $AWS_REGION
+EOF
+kubectl apply -f tpl/cluster-info.yaml
 
 # create twdps-core-labs-team oidc admin clusterrolebinding
 kubectl apply -f tpl/psk-admin-clusterrolebinding.yaml
