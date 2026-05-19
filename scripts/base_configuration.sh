@@ -11,7 +11,6 @@ karpenter_node_iam_role_name=$(terraform output -raw karpenter_node_iam_role_nam
 export aws_assume_role=$(jq -er .aws_assume_role "$cluster_name".auto.tfvars.json)
 # export AWS_DEFAULT_REGION=$(jq -er .aws_region "$cluster_name".auto.tfvars.json)
 
-awsAssumeRole "${aws_account_id}" "${aws_assume_role}"
 # store cluster identifiers in 1password vault
 write1passwordField platform "${cluster_name}" kubeconfig-base64 "$kubeconfig"
 write1passwordField platform "${cluster_name}" cluster-url $(terraform output -raw cluster_url)
