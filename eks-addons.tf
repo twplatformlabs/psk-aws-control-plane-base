@@ -142,7 +142,7 @@ resource "aws_eks_pod_identity_association" "crossplane_provider" {
   role_arn        = data.aws_iam_role.crossplane_provider.arn
 }
 
-resource "aws_eks_pod_identity_association" "crossplane_provider" {
+resource "aws_eks_pod_identity_association" "crossplane_iam_provider" {
   cluster_name    = var.cluster_name
   namespace       = "crossplane-system"
   service_account = "upbound-provider-aws-iam"
