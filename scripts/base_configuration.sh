@@ -31,6 +31,8 @@ kind: ConfigMap
 metadata:
   name: cluster-info
   namespace: default
+  labels:
+    platform.psk.io/config: "cluster-info"
 data:
   clusterName: $cluster_name
   crossplaneRoleArn: $crossplane_provider_role_arn
