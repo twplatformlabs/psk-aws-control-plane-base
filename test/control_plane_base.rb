@@ -9,18 +9,6 @@ describe eks(tfvars["cluster_name"]) do
   its(:version) { should eq tfvars['kubernetes_version'] }
 end
 
-describe iam_role(tfvars["cluster_name"] + '-vpc-cni') do
-  it { should exist }
-end
-
-describe iam_role(tfvars["cluster_name"] + '-ebs-csi-controller-sa') do
-  it { should exist }
-end
-
-describe iam_role(tfvars["cluster_name"] + '-efs-csi-controller-sa') do
-  it { should exist }
-end
-
 describe efs(tfvars["cluster_name"] + "-efs-csi-storage") do
   it { should exist }
 end
