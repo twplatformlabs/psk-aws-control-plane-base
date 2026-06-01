@@ -183,6 +183,7 @@ module "karpenter" {
   node_iam_role_additional_policies = {
     AmazonSSMManagedInstanceCore = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
   }
+  enable_inline_policy = true
 }
 
 output "karpenter_iam_role_arn" {
