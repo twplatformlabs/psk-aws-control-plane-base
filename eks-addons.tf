@@ -10,36 +10,14 @@ module "eks_addons" {
 
   eks_addons = {
 
-    kube-proxy = { most_recent = true }
-
-    vpc-cni = {
-      most_recent              = true
-      service_account_role_arn = module.vpc_cni_irsa_role.arn
-    }
-
-    coredns = {
-      most_recent = true
-      configuration_values = jsonencode({
-        autoScaling = {
-          "enabled" = true
-        }
-        nodeSelector = {
-          "node.kubernetes.io/role" = "management"
-        }
-        tolerations = [
-          {
-            key      = "dedicated"
-            operator = "Equal"
-            value    = "management"
-            effect   = "NoSchedule"
-          }
-        ]
-      })
-    }
-
     aws-ebs-csi-driver = {
       most_recent              = true
-      service_account_role_arn = module.ebs_csi_irsa_role.arn
+      resolve_conflicts_on_create = "OVERWRITE"
+      resolve_conflicts_on_update = "OVERWRITE"
+      pod_identity_association = [{
+        role_arn        = module.ebs_csi_pod_identity.iam_role_arn
+        service_account = "ebs-csi-controller-sa"
+      }]
       configuration_values = jsonencode({
         controller = {
           nodeSelector = {
@@ -59,7 +37,12 @@ module "eks_addons" {
 
     aws-efs-csi-driver = {
       most_recent              = true
-      service_account_role_arn = module.efs_csi_irsa_role.arn
+      resolve_conflicts_on_create = "OVERWRITE"
+      resolve_conflicts_on_update = "OVERWRITE"
+      pod_identity_association = [{
+        role_arn        = module.efs_csi_pod_identity.iam_role_arn
+        service_account = "efs-csi-controller-sa"
+      }]
       configuration_values = jsonencode({
         controller = {
           nodeSelector = {
@@ -76,93 +59,37 @@ module "eks_addons" {
         }
       })
     }
-
-    eks-pod-identity-agent = { most_recent = true }
   }
 }
 
-module "vpc_cni_irsa_role" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts"
-  version = "6.4.0"
+module "ebs_csi_pod_identity" {
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
+  version = "2.8.1"
 
-  path             = "/PSKRoles/"
-  name             = "${var.cluster_name}-vpc-cni"
-  use_name_prefix  = false
+  name                      = "${var.cluster_name}-ebs-csi"
+  attach_aws_ebs_csi_policy = true
 
-  attach_vpc_cni_policy = true
-  vpc_cni_enable_ipv4   = true
-
-  oidc_providers = {
+  associations = {
     main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:aws-node"]
+      cluster_name    = module.eks.cluster_name
+      namespace       = "kube-system"
+      service_account = "ebs-csi-controller-sa"
     }
   }
 }
 
-module "ebs_csi_irsa_role" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts"
-  version = "6.4.0"
+module "efs_csi_pod_identity" {
+  source  = "terraform-aws-modules/eks-pod-identity/aws"
+  version = "2.8.1"
 
-  path             = "/PSKRoles/"
-  name             = "${var.cluster_name}-ebs-csi-controller-sa"
-  use_name_prefix  = false
-  attach_ebs_csi_policy = true
+  name            = "${var.cluster_name}-efs-csi"
+  attach_aws_efs_csi_policy = true
 
-  oidc_providers = {
+  associations = {
     main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:ebs-csi-controller-sa"]
+      cluster_name    = module.eks.cluster_name
+      namespace       = "kube-system"
+      service_account = "efs-csi-controller-sa"
     }
   }
-}
-
-module "efs_csi_irsa_role" {
-  source  = "terraform-aws-modules/iam/aws//modules/iam-role-for-service-accounts"
-  version = "6.4.0"
-
-  path             = "/PSKRoles/"
-  name             = "${var.cluster_name}-efs-csi-controller-sa"
-  use_name_prefix  = false
-  attach_efs_csi_policy = true
-
-  oidc_providers = {
-    main = {
-      provider_arn               = module.eks.oidc_provider_arn
-      namespace_service_accounts = ["kube-system:efs-csi-controller-sa"]
-    }
-  }
-}
-
-# bootstrapPod-identity for the Crossplane aws family providers. See psk-platform-ext-crossplane for details
-resource "aws_eks_pod_identity_association" "crossplane_provider" {
-  cluster_name    = var.cluster_name
-  namespace       = "crossplane-system"
-  service_account = "upbound-provider-family-aws"
-  role_arn        = data.aws_iam_role.crossplane_provider.arn
-}
-
-resource "aws_eks_pod_identity_association" "crossplane_iam_provider" {
-  cluster_name    = var.cluster_name
-  namespace       = "crossplane-system"
-  service_account = "upbound-provider-aws-iam"
-  role_arn        = data.aws_iam_role.crossplane_provider.arn
-}
-
-resource "aws_eks_pod_identity_association" "crossplane_eks_provider" {
-  cluster_name    = var.cluster_name
-  namespace       = "crossplane-system"
-  service_account = "upbound-provider-aws-eks"
-  role_arn        = data.aws_iam_role.crossplane_provider.arn
-}
-
-resource "aws_eks_pod_identity_association" "crossplane_ksm_provider" {
-  cluster_name    = var.cluster_name
-  namespace       = "crossplane-system"
-  service_account = "upbound-provider-aws-kms"
-  role_arn        = data.aws_iam_role.crossplane_provider.arn
-}
-
-output "crossplane_provider_role_arn" {
-  value = data.aws_iam_role.crossplane_provider.arn
 }

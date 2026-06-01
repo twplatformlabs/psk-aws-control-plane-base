@@ -29,6 +29,41 @@ module "eks" {
   enabled_log_types = var.enable_log_types
   create_kms_key    = true
 
+  addons = {
+    eks-pod-identity-agent = {
+      before_compute = true
+      most_recent = true
+      resolve_conflicts_on_create = "OVERWRITE"
+      resolve_conflicts_on_update = "OVERWRITE"
+    }
+    kube-proxy = { most_recent = true }
+    vpc-cni = {
+      before_compute = true
+      most_recent = true
+      resolve_conflicts_on_create = "OVERWRITE"
+      resolve_conflicts_on_update = "OVERWRITE"
+    }
+    coredns = {
+      most_recent = true
+      resolve_conflicts_on_create = "OVERWRITE"
+      resolve_conflicts_on_update = "OVERWRITE"
+      configuration_values = jsonencode({
+        autoScaling = {
+          "enabled" = true
+        }
+        nodeSelector = {
+          "node.kubernetes.io/role" = "management"
+        }
+        tolerations = [{
+            key      = "dedicated"
+            operator = "Equal"
+            value    = "management"
+            effect   = "NoSchedule"
+        }]
+      })
+    }
+  }
+  
   # For longer cluster names using the prefix goes over 38 char limit
   iam_role_use_name_prefix = false
 
