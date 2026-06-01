@@ -43,4 +43,12 @@ Not in use within PSK lab.
 
 Using Bottlerocket for management node group and Karpenter node pools.
 
-[OFficial release annoucements](https://kubernetes.io/blog/2025/08/27/kubernetes-v1-34-release/)
+[Official release annoucements](https://kubernetes.io/blog/2025/08/27/kubernetes-v1-34-release/)
+
+### eks-pod-identity adoption, Crossplane bootstrap identity associations
+
+1. Moved eks-pod-identity-agent, kube-proxy, vpc-cni, coredns resource definitions from blueprint to eks provisioning module.  
+
+2. Changed all addons to use eks-pod-identity-associations instead or Irsa roles.  
+
+3. Created the crossplane role with admin permissions and the pod-identity associations with the specific initial CRossplane AWS provider agents needed to bootstrap crossplane to be able to manage everything else directly.  

@@ -6,58 +6,27 @@
 	</p>
 </div>
 
-This `control plane base` pipeline is effectively limited to all, and only, those components of EKS that are managed by AWS. Deployments, version changes, and removal of the associated resource belong to AWS in the shared-responsibility model of IaaS vendor managed services. The pipeline owner directs only 'when' such changes occur by specifying version changes in the environment configuration or other similar practices of notifying AWS of a change to be made.  
-
-A typical Engineering Platform release pipeline for the underlying cluster control plane instances will have the following cluster roles, following the VPC release path:
-```mermaid
----
-title: Typical Starting Platform Control Plane Path-to-Production
----
-flowchart LR
-
-    GITPUSH --> DEV
-    GITMERGE --> QA
-    GITTAG --> PREVIEW --> NONPROD --> PROD
-    GITTAG --> MAPI
-
-    DEV["Sandbox
-        (Platform Eng Only)"]
-    QA["QA
-        (Platform Eng Only)"]
-    PREVIEW["Preview
-            (Developer Facing)"]
-    MAPI["MAPI
-            (Managment)"]
-    NONPROD["Non-production
-            (Developer Facing)"]
-    PROD["Production
-            (Developer Facing)"]
-
-    GITPUSH@{ shape: brace-r, label: "$ git push _branch_" }
-    GITMERGE@{ shape: brace-r, label: "$ git merge _main_" }
-    GITTAG@{ shape: brace-r, label: "$ git tag _1.3.3_" }
-```
-
-At scale, each role may include multiple clusters. Note that the platform customer namespaces are limited to targeted roles that all amount to `production` from the platform product team's point of view.  
+This `control plane base` pipeline is intended to be limited to all, and only, those components of EKS that are managed by AWS. Deployments, version changes, and removal of the associated resources belong to AWS in the shared-responsibility model of IaaS vendor managed services. The pipeline owner directs only 'when' such changes occur by specifying version changes in the environment configuration or other similar practices of notifying AWS of a change to be made. In addition, cautiously consider including a customization to the core EKS configuration that is part of your overall architecture and without which the Kubernetes control plane itslef would not be capable of initial communication. An example of this might be the use of an alternative CNI or the basic Karpenter install.
 
 ## AWS Managed EKS Control Plane
+
 ```mermaid
 ---
-title: EKS Components
+title: EKS Managed architecture
 ---
 flowchart LR
 
-    VPC --- IRSA
-    EBSCSI --> RWO --- IRSA
-    EFSCSI --> RWM --- IRSA
-		EBSNODE --- IRSA
-		EFSNODE --- IRSA
+    VPC --- PODID
+    EBSCSI --> RWO --- PODID
+    EFSCSI --> RWM --- PODID
+    EBSNODE --- PODID
+    EFSNODE --- PODID
+    DNS --- PODID
     EVNT --> SQS --> KRPT
     LOGS --- LOGS1
 
     subgraph Control Plane Base
         subgraph Management Node Pool
-            
             DNS[CoreDNS]
             EBSCSI[ebs-csi-controller]
             EFSCSI[efs-csi-controller]
@@ -67,22 +36,66 @@ flowchart LR
         subgraph daemons
             KP[kube-proxy]
             VPC[vpc-cni]
-						EBSNODE[ebs-csi-node]
-						EFSNODE[efs-csi-node]
+			EBSNODE[ebs-csi-node]
+			EFSNODE[efs-csi-node]
         end
     end
 
-    IRSA@{ shape: brace-l, label: "irsa roles" }
+    PODID@{ shape: brace-l, label: "eks-pod-identities" }
     RWO[(RW-One storageclass)]
-    RWM[(RW-Many storageclass
-         w/general mnt)]
-    
+    RWM[(RW-Many storageclass w/general mnt)]
     LOGS1@{ shape: brace-l, label: "api, audit, authenticator, controllerManager, scheduler" }
     SQS@{ shape: rounded, label: "SQS"}
     EVNT@{ shape: trap-b, label: "Event Bridge"}
 
 ```
 
+```mermaid
+---
+title: Terraform Resources
+---
+flowchart LR
+    subgraph crossplane bootstrap
+        subgraph eks-pod-identity-associations
+            upbound-provider-family-aws
+            upbound-provider-aws-iam
+            upbound-provider-aws-eks
+            upbound-provider-aws-kms
+        end
+    end
+    subgraph helm release
+        karpenter-crds
+        karpenter
+    end
+    subgraph terraform-aws-modules/eks/aws//modules/karpenter
+        event-brige
+        sqs-queue
+    end
+    subgraph cloudposse/efs/aws
+        DEF[Default EFS mount - claims automatically on namespaced folderpaths]
+    end
+    subgraph aws-ia/eks-blueprints-addons
+        aws-ebs-csi-driver
+        aws-efs-csi-driver
+    end
+    subgraph aws_eks_identity_provider_config
+        TEN[pskctl Auth0 tenant]
+    end
+    subgraph terraform-aws-modules/eks
+        subgraph eks managed nodegroup
+            MgmtPool@{ shape: procs, label: "management-arm-rkt-mng"}
+        end
+        subgraph addons
+        ADD["eks-pod-identity-agent
+            kube-proxy
+            coredns
+            vpc-cni
+            "]
+        end
+        subgraph cluster definition
+        end
+    end
+```
 1. ARM Arch Managed Node Group for dedicated management pool with specific toleration requirement.
 
 ```yaml
@@ -96,21 +109,28 @@ tolerations:
 ```
 2. AWS managed EKS Addons
 
+* kube-proxy
+* eks-pod-identity-agent
 * vpc-cni
 * coredns
 * aws-ebs-csi-driver
 * aws-efs-csi-driver
 	* common efs target created, filesystem-id stored in 1password, make discoverable via platforms/clusters API
 * karpenter
-	* sqs and eventbridge managed disruption events
-	* arm and amd NodePools resources defined
+	* managed disruption events via sqs and eventbridge
+	* default arm and amd NodePools resources defined
 		* target desired architecture with `kubernetes.io/arch` = "arm64" | "amd64"
 
 3. psk-system and karpenter namespaces created
 4. admin ClusterRolebinding created for twplatformlabs/platform team claim
-5. aws_eks_pod_identity_association to PSKCrossplaneProviderRole created for service account `upbound-provider-family-aws`
+5. aws_eks_pod_identity_association to PSKCrossplaneProviderRole created for aws provider bootstrap
 
-Release tags based off kubernetes_version; e.g., When using kubernetes_version=1.34 the release tags will be 1.34.xx.   
+* `upbound-provider-family-aws`
+* `upbound-provider-aws-iam`
+* `upbound-provider-aws-ksm`
+* `upbound-provider-aws-eks`
+
+6. cluster-info config map set to support ArgoCD Core, role-based cluster config management
 
 ## Authentication modes
 ```mermaid
@@ -226,6 +246,37 @@ flowchart TD
     end
 ```
 
+A typical Engineering Platform release pipeline for the underlying cluster control plane instances will have the following cluster roles, following the VPC release path:
+```mermaid
+---
+title: Typical Starting Platform Control Plane Path-to-Production
+---
+flowchart LR
+
+    GITPUSH --> DEV
+    GITMERGE --> QA
+    GITTAG --> PREVIEW --> NONPROD --> PROD
+    GITTAG --> MAPI
+
+    DEV["Sandbox
+        (Platform Eng Only)"]
+    QA["QA
+        (Platform Eng Only)"]
+    PREVIEW["Preview
+            (Developer Facing)"]
+    MAPI["MAPI
+            (Managment)"]
+    NONPROD["Non-production
+            (Developer Facing)"]
+    PROD["Production
+            (Developer Facing)"]
+
+    GITPUSH@{ shape: brace-r, label: "$ git push _branch_" }
+    GITMERGE@{ shape: brace-r, label: "$ git merge _main_" }
+    GITTAG@{ shape: brace-r, label: "$ git tag _1.3.3_" }
+```
+
+At scale, each role may include multiple clusters. Note that the platform customer namespaces are limited to targeted roles that all amount to `production` from the platform product team's point of view.  
 ```mermaid
 ---
 title: simplified lab pipeline
