@@ -216,6 +216,7 @@ workflows:
           after-apply:
             - deploy-base-configuration:
                 cluster: prod-i01-aws-us-east-2
+                cluster-role: production
             - run-integration-tests:
                 cluster: prod-i01-aws-us-east-2
             - do/slack-bot:
