@@ -131,6 +131,21 @@ tolerations:
 * `upbound-provider-aws-eks`
 
 6. cluster-info config map set to support ArgoCD Core, role-based cluster config management
+```yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: cluster-info
+  namespace: default
+  labels:
+    platform.psk.io/config: "cluster-info"
+data:
+  clusterName: $cluster_name
+  clusterRole: $cluster_role
+  crossplaneRoleArn: $crossplane_provider_role_arn
+  region: $aws_region
+  acccountId: $aws_account_id
+```
 
 ## Authentication modes
 ```mermaid

@@ -53,14 +53,16 @@ commands:
       cluster:
         description: cluster and tf workspace name
         type: string
-        default: ""
+      cluster-role:
+        description: cluster role
+        type: string
     steps:
       - run:
           name: generate kubeconfig
           command: bash scripts/generate_kubeconfig.sh << parameters.cluster >>
       - run:
           name: store cluster identifiers and apply baseline configuration
-          command: bash scripts/base_configuration.sh << parameters.cluster >>
+          command: bash scripts/base_configuration.sh << parameters.cluster >> << parameters.cluster-role >>
       - op/env:
           env-file: op.<< parameters.cluster >>.env
 
@@ -178,6 +180,7 @@ workflows:
           after-apply:
             - deploy-base-configuration:
                 cluster: sbx-i01-aws-us-east-1
+                cluster-role: sandbox
             - run-integration-tests:
                 cluster: sbx-i01-aws-us-east-1
           requires:

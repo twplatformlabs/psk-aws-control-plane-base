@@ -3,13 +3,14 @@ source bash-functions.sh  # from orb-pipeline-events/bash-functions
 set -eo pipefail
 
 cluster_name=$1
-export AWS_REGION=$(jq -er .aws_region "$cluster_name".auto.tfvars.json)
+cluster_role=$2
+export aws_region=$(jq -er .aws_region "$cluster_name".auto.tfvars.json)
+export aws_assume_role=$(jq -er .aws_assume_role "$cluster_name".auto.tfvars.json)
+export aws_account_id=$(jq -er .aws_account_id "$cluster_name".auto.tfvars.json)
 kubeconfig=$(cat ~/.kube/config | base64)
 eks_efs_csi_storage_id=$(terraform output -raw eks_efs_csi_storage_id)
 crossplane_provider_role_arn=$(terraform output -raw crossplane_provider_role_arn)
 karpenter_node_iam_role_name=$(terraform output -raw karpenter_node_iam_role_name)
-export aws_assume_role=$(jq -er .aws_assume_role "$cluster_name".auto.tfvars.json)
-# export AWS_DEFAULT_REGION=$(jq -er .aws_region "$cluster_name".auto.tfvars.json)
 
 # store cluster identifiers in 1password vault
 write1passwordField platform "${cluster_name}" kubeconfig-base64 "$kubeconfig"
@@ -35,8 +36,10 @@ metadata:
     platform.psk.io/config: "cluster-info"
 data:
   clusterName: $cluster_name
+  clusterRole: $cluster_role
   crossplaneRoleArn: $crossplane_provider_role_arn
-  region: $AWS_REGION
+  region: $aws_region
+  acccountId: $aws_account_id
 EOF
 kubectl apply -f tpl/cluster-info.yaml
 
