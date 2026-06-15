@@ -1,3 +1,9 @@
+# Bootstrapping the Crossplane Provider requires a provider role and eks-pod-identity-association
+# this role is created in the psk-aws-iam-profiles pipeline, and the associations are created here
+data "aws_iam_role" "crossplane_provider" {
+  name = "PSKCrossplaneProviderRole"
+}
+
 # bootstrapPod-identity for the Crossplane aws family providers. See psk-platform-ext-crossplane for details
 resource "aws_eks_pod_identity_association" "crossplane_provider" {
   cluster_name    = module.eks.cluster_name
