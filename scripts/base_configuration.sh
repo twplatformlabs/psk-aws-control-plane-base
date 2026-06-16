@@ -39,7 +39,7 @@ data:
   clusterRole: $cluster_role
   crossplaneRoleArn: $crossplane_provider_role_arn
   region: $aws_region
-  acccountId: $aws_account_id
+  acccountId: "$aws_account_id"
 EOF
 kubectl apply -f tpl/cluster-info.yaml
 
