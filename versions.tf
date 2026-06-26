@@ -3,15 +3,15 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 6.47"
+      version = "~> 6.52"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
-      version = "~> 3.1"
+      version = "~> 3.2"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 2.9"
+      version = "~> 3.2"
     }
   }
   # The backend cloud store is managed using the terraform orb tfc-backend command.
@@ -46,11 +46,11 @@ provider "aws" {
 }
 
 provider "helm" {
-  kubernetes {
+  kubernetes = {
     host                   = module.eks.cluster_endpoint
     cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
 
-    exec {
+    exec = {
       api_version = "client.authentication.k8s.io/v1beta1"
       command     = "aws"
       args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name, "--role", "arn:aws:iam::${var.aws_account_id}:role/${var.aws_assume_role}", "--region", var.aws_region]
