@@ -19,3 +19,8 @@
   run bash -c "kubectl get clusterrolebindings"
   [[ "${output}" =~ "psk-admin-clusterrolebinding" ]]
 }
+
+@test "validate cluster-info" {
+  run bash -c "kubectl get clusterrolebindings"
+  [[ "${output}" =~ "psk-admin-clusterrolebinding" ]]
+}

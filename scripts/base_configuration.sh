@@ -41,6 +41,7 @@ data:
   region: $aws_region
   acccountId: "$aws_account_id"
 EOF
+cat tpl/cluster-info.yaml
 kubectl apply -f tpl/cluster-info.yaml
 
 # create twdps-core-labs-team oidc admin clusterrolebinding
