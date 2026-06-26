@@ -1,6 +1,6 @@
 module "eks" {
   source  = "terraform-aws-modules/eks/aws"
-  version = "21.23.0"
+  version = "21.24.0"
 
   name               = var.cluster_name
   kubernetes_version = var.kubernetes_version
@@ -175,7 +175,7 @@ output "cluster_public_certificate_authority_data" {
 
 module "karpenter" {
   source  = "terraform-aws-modules/eks/aws//modules/karpenter"
-  version = "21.23.0"
+  version = "21.24.0"
 
   cluster_name = module.eks.cluster_name
   create_pod_identity_association = true
