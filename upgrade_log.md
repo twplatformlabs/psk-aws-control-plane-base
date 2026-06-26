@@ -1,5 +1,9 @@
 ## Upgrade Notes
 
+### hashicorp.helm provider < 3.0.0
+
+The `aws-ia/eks-blueprints-addons/aws` module still has a dependency for helm provider < v3.0.0  
+
 ### Kubernetes v1.34 to v1.35
 
 1. Cgroup v1 Support Removed: Kubernetes 1.35 deprecates cgroup v1 support, meaning the kubelet will refuse to start by default on nodes using cgroup v1.
