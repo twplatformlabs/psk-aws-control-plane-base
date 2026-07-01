@@ -63,9 +63,8 @@ commands:
       - run:
           name: store cluster identifiers and apply baseline configuration
           command: bash scripts/base_configuration.sh << parameters.cluster >> << parameters.cluster-role >>
-      - op/env:
-          env-file: op.<< parameters.cluster >>.env
-
+      # - op/env:
+      #     env-file: op.<< parameters.cluster >>.env
 
   run-integration-tests:
     description: run cluster configuration tests
@@ -125,6 +124,10 @@ jobs:
       cluster:
         description: cluster and tf workspace name
         type: string
+      release:
+        description: testing as part of a release?
+        type: boolean
+        default: false
     steps:
       - checkout
       - set-environment:
@@ -134,6 +137,15 @@ jobs:
           op-value: platform/<< parameters.cluster>>/kubeconfig-base64
       - run-integration-tests:
           cluster: << parameters.cluster >>
+      - when:
+          condition: << parameters.release >>
+          name: post slack release message
+          steps:
+            - do/slack-bot:
+                channel: lab-events
+                message: Release psk-aws-control-plane-base
+                include-link: true
+                include-tag: true
 
 workflows:
 
@@ -181,10 +193,20 @@ workflows:
             - deploy-base-configuration:
                 cluster: sbx-i01-aws-us-east-1
                 cluster-role: sandbox
-            - run-integration-tests:
-                cluster: sbx-i01-aws-us-east-1
           requires:
             - approve sbx-i01-aws-us-east-1 changes
+          filters: *on-push-main
+
+      # noticed that on Kubernetes version upgrades the maximum running time
+      # for an executor on the free tier is sometimes exceeded and the release
+      # will fail even though nothing is actually wrong. Moving the testing
+      # into the separate job seems to be enough to deal with the issue.
+      - integration-tests:
+          name: sbx integration tests
+          context: *context
+          cluster: sbx-i01-aws-us-east-1
+          requires:
+            - apply sbx-i01-aws-us-east-1 changes
           filters: *on-push-main
 
   release prod-i01-aws-us-east-2 control plane base:
@@ -217,15 +239,21 @@ workflows:
             - deploy-base-configuration:
                 cluster: prod-i01-aws-us-east-2
                 cluster-role: production
-            - run-integration-tests:
-                cluster: prod-i01-aws-us-east-2
-            - do/slack-bot:
-                channel: lab-events
-                message: Release psk-aws-control-plane-base
-                include-link: true
-                include-tag: true
           requires:
             - approve prod-i01-aws-us-east-2 changes
+          filters: *on-tag-main
+
+      # noticed that on Kubernetes version upgrades the maximum running time
+      # for an executor on the free tier is sometimes exceeded and the release
+      # will fail even though nothing is actually wrong. Moving the testing
+      # into the separate job seems to be enough to deal with the issue.
+      - integration-tests:
+          name: prod integration tests
+          context: *context
+          cluster: prod-i01-aws-us-east-2
+          release: true
+          requires:
+            - apply prod-i01-aws-us-east-2 changes
           filters: *on-tag-main
 
       - do/gh-release:
@@ -237,7 +265,7 @@ workflows:
             - op/env:
                 env-file: op.prod-i01-aws-us-east-2.env
           requires:
-            - apply prod-i01-aws-us-east-2 changes
+            - prod integration tests
           filters: *on-tag-main
 
       - do/schedule-pipeline:
