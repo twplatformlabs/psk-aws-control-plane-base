@@ -335,6 +335,5 @@ Karpenter node pools are configured to automatically replace nodes older than 7 
 
 **TODO**  
 
-* Moving forward with using only a simple per-cluster observability solution in order to be able to support more thorough Starterkit examples. When that is in place, should see base-specific configuration managed here.
-* eks-addons vpc-cni, ebs-csi, and efs-csi don't yet have a recommended pattern for using the pod identity manager method.
+* When the simple on-cluster observability is available, add example monitoring.  
 * The current Module-based node lifecycle for the management group (`use_latest_ami_release_version`) only replaces nodes when newer release version are available. This averages about 2-3 weeks per release. A more secure approach is to have a scheduled run (weekly or similar) where the managed node group for a zero-downtime replacement. The Terraform `taint` command can be used to mark the group for replace with the next TF apply, and there are other potential ways as well.
